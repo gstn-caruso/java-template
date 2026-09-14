@@ -189,5 +189,21 @@ unresolved_placeholder_fails_with_exit_1() {
 
 unresolved_placeholder_fails_with_exit_1
 
+renders_from_another_cwd() {
+  current="renders from another cwd"
+  local scratch status
+  scratch=$(copy_repo_to_scratch)
+  (cd /tmp && bash "$scratch/.template/render.sh" --slug holy-wars --name "Holy Wars" \
+    --description "Juego hecho con libGDX en Java 25." --owner gstn-caruso \
+    --flavor libgdx --release tag-only --author "Gaston Caruso" --email gstn.caruso@gmail.com) >/dev/null 2>&1
+  status=$?
+  check "exit status" 0 "$status"
+  [[ -d "$scratch/game" ]] && pass || fail "game/ no existe tras renderizar desde otro cwd"
+  [[ -d "$scratch/.template" ]] && fail ".template sigue existiendo tras renderizar desde otro cwd" || pass
+  rm -rf "$scratch"
+}
+
+renders_from_another_cwd
+
 printf '\n%d ok, %d fallando\n' "$passed" "$failed"
 [[ $failed -eq 0 ]]
