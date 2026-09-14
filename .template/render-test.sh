@@ -104,5 +104,21 @@ render_completo_arma_el_layout_esperado() {
 
 render_completo_arma_el_layout_esperado
 
+rutas_renombradas_con_placeholders() {
+  current="rutas renombradas con placeholders"
+  local scratch
+  scratch=$(copy_repo_to_scratch)
+  render_holy_wars_sample_in "$scratch" >/dev/null 2>&1
+  local java_file="$scratch/game/src/main/java/holywars/game/HolyWarsGame.java"
+  [[ -f $java_file ]] && pass || fail "no existe $java_file"
+  grep -q 'class HolyWarsGame' "$java_file" 2>/dev/null && pass || fail "la clase no se declaro HolyWarsGame"
+  [[ -f "$scratch/game/src/deb/holy-wars" ]] && pass || fail "falta el launcher renombrado"
+  [[ -f "$scratch/game/src/deb/holy-wars.desktop" ]] && pass || fail "falta el .desktop renombrado"
+  [[ -f "$scratch/game/src/deb/icons/holy-wars.svg" ]] && pass || fail "falta el icono renombrado"
+  rm -rf "$scratch"
+}
+
+rutas_renombradas_con_placeholders
+
 printf '\n%d ok, %d fallando\n' "$passed" "$failed"
 [[ $failed -eq 0 ]]
