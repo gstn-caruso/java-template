@@ -64,12 +64,12 @@ jobs:
         run: |
           deb=$(ls "$MODULE"/target/sample-game_*_all.deb)
           dpkg-deb -I "$deb" | grep 'Package: sample-game' >/dev/null
-          dpkg-deb -c "$deb" | grep '\./usr/bin/sample-game$' >/dev/null
-          dpkg-deb -c "$deb" | grep "\\./usr/share/sample-game/sample-game-${MODULE}\\.jar\$" >/dev/null
+          dpkg-deb -c "$deb" | grep -q '\./usr/bin/sample-game$'
+          dpkg-deb -c "$deb" | grep -q "\\./usr/share/sample-game/sample-game-${MODULE}\\.jar\$"
           if [[ ${{ matrix.flavor }} == libgdx ]]; then
-            dpkg-deb -c "$deb" | grep '\./usr/share/applications/sample-game\.desktop$' >/dev/null
+            dpkg-deb -c "$deb" | grep -q '\./usr/share/applications/sample-game\.desktop$'
           else
-            if dpkg-deb -c "$deb" | grep '\.desktop$' >/dev/null; then
+            if dpkg-deb -c "$deb" | grep -q '\.desktop$'; then
               echo "the plain .deb should not contain a .desktop entry"
               exit 1
             fi
