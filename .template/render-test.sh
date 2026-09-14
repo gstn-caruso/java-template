@@ -236,5 +236,26 @@ plain_flavor_renders_app_module() {
 
 plain_flavor_renders_app_module
 
+commit_back_release_configures_changelog_and_git() {
+  current="commit back release configures changelog and git"
+  local scratch out status
+  scratch=$(copy_repo_to_scratch)
+  out=$(render_in "$scratch" --slug holy-wars --name "Holy Wars" \
+    --description "Juego hecho con libGDX en Java 25." --owner gstn-caruso \
+    --flavor libgdx --release commit-back --author "Gaston Caruso" --email gstn.caruso@gmail.com 2>&1)
+  status=$?
+  check "exit status" 0 "$status"
+  local releaserc="$scratch/.releaserc.json"
+  grep -q '"@semantic-release/changelog"' "$releaserc" 2>/dev/null && pass || fail "falta @semantic-release/changelog: $out"
+  grep -q '"@semantic-release/git"' "$releaserc" 2>/dev/null && pass || fail "falta @semantic-release/git"
+  grep -q 'game/target/holy-wars_\*_all.deb' "$releaserc" 2>/dev/null && pass || fail "asset del releaserc incorrecto"
+  grep -q '<version>0.1.0-SNAPSHOT</version>' "$scratch/pom.xml" 2>/dev/null && pass || fail "version incorrecta en pom.xml"
+  grep -q '<version>0.1.0-SNAPSHOT</version>' "$scratch/domain/pom.xml" 2>/dev/null && pass || fail "version incorrecta en domain/pom.xml"
+  grep -q '<version>0.1.0-SNAPSHOT</version>' "$scratch/game/pom.xml" 2>/dev/null && pass || fail "version incorrecta en game/pom.xml"
+  rm -rf "$scratch"
+}
+
+commit_back_release_configures_changelog_and_git
+
 printf '\n%d ok, %d fallando\n' "$passed" "$failed"
 [[ $failed -eq 0 ]]
