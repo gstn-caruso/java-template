@@ -120,5 +120,24 @@ rutas_renombradas_con_placeholders() {
 
 rutas_renombradas_con_placeholders
 
+pom_raiz_y_releaserc_quedan_coherentes() {
+  current="pom raiz y releaserc quedan coherentes"
+  local scratch
+  scratch=$(copy_repo_to_scratch)
+  render_holy_wars_sample_in "$scratch" >/dev/null 2>&1
+  local pom="$scratch/pom.xml"
+  grep -q '<version>0.0.0-SNAPSHOT</version>' "$pom" 2>/dev/null && pass || fail "version incorrecta en pom.xml"
+  grep -q '<module>game</module>' "$pom" 2>/dev/null && pass || fail "module game ausente en pom.xml"
+  grep -q '<artifactId>holy-wars-parent</artifactId>' "$pom" 2>/dev/null && pass || fail "artifactId incorrecto en pom.xml"
+  grep -q '<groupId>io.github.gstncaruso</groupId>' "$pom" 2>/dev/null && pass || fail "groupId incorrecto en pom.xml"
+  grep -q '<artifactId>holy-wars-domain</artifactId>' "$scratch/game/pom.xml" 2>/dev/null && pass || fail "game/pom.xml no referencia holy-wars-domain"
+  local releaserc="$scratch/.releaserc.json"
+  grep -q '"@semantic-release/git"' "$releaserc" 2>/dev/null && fail "releaserc tiene @semantic-release/git en modo tag-only" || pass
+  grep -q 'game/target/holy-wars_\*_all.deb' "$releaserc" 2>/dev/null && pass || fail "asset del releaserc incorrecto"
+  rm -rf "$scratch"
+}
+
+pom_raiz_y_releaserc_quedan_coherentes
+
 printf '\n%d ok, %d fallando\n' "$passed" "$failed"
 [[ $failed -eq 0 ]]
