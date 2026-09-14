@@ -175,5 +175,19 @@ valores_con_caracteres_especiales_quedan_literales() {
 
 valores_con_caracteres_especiales_quedan_literales
 
+unresolved_placeholder_fails_with_exit_1() {
+  current="unresolved placeholder fails with exit 1"
+  local scratch err status
+  scratch=$(copy_repo_to_scratch)
+  echo '{{orphan}}' >> "$scratch/.template/common/.tcr"
+  err=$(render_holy_wars_sample_in "$scratch" 2>&1 1>/dev/null)
+  status=$?
+  check "exit status" 1 "$status"
+  echo "$err" | grep -q '\.tcr' && pass || fail "stderr no nombro el archivo con el placeholder: $err"
+  rm -rf "$scratch"
+}
+
+unresolved_placeholder_fails_with_exit_1
+
 printf '\n%d ok, %d fallando\n' "$passed" "$failed"
 [[ $failed -eq 0 ]]
