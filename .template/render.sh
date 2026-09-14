@@ -193,9 +193,9 @@ render_project() {
   copy_common_layer
   copy_flavor_layer
   copy_release_layer
+  remove_template_sources
   rename_placeholder_paths
   replace_placeholder_contents
-  remove_template_sources
   fail_if_placeholders_remain
 }
 
