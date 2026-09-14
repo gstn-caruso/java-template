@@ -1,4 +1,4 @@
-name: build
+name: Template CI
 
 on:
   push:
