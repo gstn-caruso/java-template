@@ -1,0 +1,3 @@
+#!/bin/sh
+# --enable-native-access=ALL-UNNAMED silences the JVM warning for LWJGL's native memory access.
+exec java --enable-native-access=ALL-UNNAMED -jar /usr/share/{{slug}}/{{slug}}-game.jar "$@"

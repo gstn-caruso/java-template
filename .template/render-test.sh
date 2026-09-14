@@ -84,5 +84,25 @@ release_inexistente_falla() {
 flavor_inexistente_falla
 release_inexistente_falla
 
+render_completo_arma_el_layout_esperado() {
+  current="render completo arma el layout esperado"
+  local scratch out status
+  scratch=$(copy_repo_to_scratch)
+  out=$(render_holy_wars_sample_in "$scratch" 2>&1)
+  status=$?
+  check "exit status" 0 "$status"
+  check "sin placeholders sin resolver" "" "$(grep -rlE '\{\{[a-z_]+\}\}' "$scratch" 2>/dev/null | tr '\n' ' ' | sed 's/ *$//')"
+  [[ -d "$scratch/.template" ]] && fail ".template sigue existiendo" || pass
+  [[ -f "$scratch/.github/workflows/template-ci.yml" ]] && fail "template-ci.yml sigue existiendo" || pass
+  [[ -f "$scratch/.github/workflows/ci.yml" ]] && pass || fail "ci.yml no existe: $out"
+  grep -q '${{ runner.os }}' "$scratch/.github/workflows/ci.yml" 2>/dev/null && pass || fail "ci.yml perdio \${{ runner.os }}"
+  [[ -d "$scratch/game" ]] && pass || fail "game/ no existe"
+  check ".tcr" "mvn -q -B test" "$(cat "$scratch/.tcr" 2>/dev/null)"
+  check "README arranca con el nombre" "# Holy Wars" "$(head -n1 "$scratch/README.md" 2>/dev/null)"
+  rm -rf "$scratch"
+}
+
+render_completo_arma_el_layout_esperado
+
 printf '\n%d ok, %d fallando\n' "$passed" "$failed"
 [[ $failed -eq 0 ]]
