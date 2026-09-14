@@ -68,9 +68,16 @@ validate_required_arguments() {
   done
 }
 
+validate_flavor_and_release_exist() {
+  [[ -d "$SCRIPT_DIR/flavors/$FLAVOR" ]] || fail_usage
+  [[ -d "$SCRIPT_DIR/release/$RELEASE" ]] || fail_usage
+}
+
 main() {
+  SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
   parse_args "$@"
   validate_required_arguments
+  validate_flavor_and_release_exist
 }
 
 main "$@"

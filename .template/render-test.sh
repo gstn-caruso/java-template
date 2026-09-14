@@ -59,5 +59,30 @@ falta_un_obligatorio_falla() {
 sin_args_muestra_uso_y_falla
 falta_un_obligatorio_falla
 
+flavor_inexistente_falla() {
+  current="flavor inexistente falla"
+  local scratch status
+  scratch=$(copy_repo_to_scratch)
+  render_in "$scratch" --slug x --name X --description d --owner o \
+    --flavor noexiste --release tag-only >/dev/null 2>&1
+  status=$?
+  check "exit status" 2 "$status"
+  rm -rf "$scratch"
+}
+
+release_inexistente_falla() {
+  current="release inexistente falla"
+  local scratch status
+  scratch=$(copy_repo_to_scratch)
+  render_in "$scratch" --slug x --name X --description d --owner o \
+    --flavor libgdx --release noexiste >/dev/null 2>&1
+  status=$?
+  check "exit status" 2 "$status"
+  rm -rf "$scratch"
+}
+
+flavor_inexistente_falla
+release_inexistente_falla
+
 printf '\n%d ok, %d fallando\n' "$passed" "$failed"
 [[ $failed -eq 0 ]]
