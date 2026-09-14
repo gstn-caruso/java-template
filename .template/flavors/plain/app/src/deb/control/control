@@ -1,0 +1,9 @@
+Package: {{slug}}
+Version: [[version]]
+Section: misc
+Priority: optional
+Architecture: all
+Depends: openjdk-25-jre | java-runtime (>= 25)
+Maintainer: {{author}} <{{email}}>
+Description: {{description}}
+ Instala el comando {{slug}}; requiere Java 25.
