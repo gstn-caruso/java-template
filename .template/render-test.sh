@@ -257,5 +257,24 @@ commit_back_release_configures_changelog_and_git() {
 
 commit_back_release_configures_changelog_and_git
 
+plain_flavor_with_commit_back_release() {
+  current="plain flavor with commit back release"
+  local scratch out status
+  scratch=$(copy_repo_to_scratch)
+  out=$(render_in "$scratch" --slug plain-tool --name "Plain Tool" \
+    --description "A plain command line tool." --owner gstn-caruso \
+    --flavor plain --release commit-back --author "Gaston Caruso" --email gstn.caruso@gmail.com 2>&1)
+  status=$?
+  check "exit status" 0 "$status"
+  [[ -d "$scratch/app" ]] && pass || fail "app/ no existe: $out"
+  local releaserc="$scratch/.releaserc.json"
+  grep -q 'app/target/plain-tool_\*_all.deb' "$releaserc" 2>/dev/null && pass || fail "asset del releaserc incorrecto"
+  grep -q '<version>0.1.0-SNAPSHOT</version>' "$scratch/pom.xml" 2>/dev/null && pass || fail "version incorrecta en pom.xml"
+  check "sin placeholders sin resolver" "" "$(grep -rlE '\{\{[a-z_]+\}\}' "$scratch" 2>/dev/null | tr '\n' ' ' | sed 's/ *$//')"
+  rm -rf "$scratch"
+}
+
+plain_flavor_with_commit_back_release
+
 printf '\n%d ok, %d fallando\n' "$passed" "$failed"
 [[ $failed -eq 0 ]]
