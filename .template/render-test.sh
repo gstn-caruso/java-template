@@ -248,6 +248,8 @@ commit_back_release_configures_changelog_and_git() {
   local releaserc="$scratch/.releaserc.json"
   grep -q '"@semantic-release/changelog"' "$releaserc" 2>/dev/null && pass || fail "falta @semantic-release/changelog: $out"
   grep -q '"@semantic-release/git"' "$releaserc" 2>/dev/null && pass || fail "falta @semantic-release/git"
+  grep -qF '"changelogFile": "CHANGELOG.md"' "$releaserc" 2>/dev/null && pass || fail "changelogFile incorrecto en releaserc"
+  grep -qF '"assets": ["pom.xml", "*/pom.xml", "CHANGELOG.md"]' "$releaserc" 2>/dev/null && pass || fail "assets del plugin git incorrectos en releaserc"
   grep -q 'game/target/holy-wars_\*_all.deb' "$releaserc" 2>/dev/null && pass || fail "asset del releaserc incorrecto"
   grep -q '<version>0.1.0-SNAPSHOT</version>' "$scratch/pom.xml" 2>/dev/null && pass || fail "version incorrecta en pom.xml"
   grep -q '<version>0.1.0-SNAPSHOT</version>' "$scratch/domain/pom.xml" 2>/dev/null && pass || fail "version incorrecta en domain/pom.xml"
