@@ -139,5 +139,25 @@ pom_raiz_y_releaserc_quedan_coherentes() {
 
 pom_raiz_y_releaserc_quedan_coherentes
 
+defaults_se_derivan_del_slug_y_el_owner() {
+  current="defaults se derivan del slug y el owner"
+  local scratch out status
+  scratch=$(copy_repo_to_scratch)
+  out=$(render_in "$scratch" --slug my-cool-app --name "My Cool App" \
+    --description "d" --owner some-owner --flavor libgdx --release tag-only \
+    --author "Someone" --email someone@example.com --year 2030 2>&1)
+  status=$?
+  check "exit status" 0 "$status"
+  [[ -f "$scratch/game/src/main/java/mycoolapp/game/MyCoolAppGame.java" ]] \
+    && pass || fail "no existe el java con paquete/clase derivados: $out"
+  grep -q '<groupId>io.github.someowner</groupId>' "$scratch/pom.xml" 2>/dev/null \
+    && pass || fail "group-id derivado incorrecto"
+  grep -q 'Copyright (c) 2030 Someone' "$scratch/LICENSE" 2>/dev/null \
+    && pass || fail "LICENSE no tiene el year/author dados"
+  rm -rf "$scratch"
+}
+
+defaults_se_derivan_del_slug_y_el_owner
+
 printf '\n%d ok, %d fallando\n' "$passed" "$failed"
 [[ $failed -eq 0 ]]
