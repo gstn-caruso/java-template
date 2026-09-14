@@ -78,7 +78,7 @@ validate_flavor_and_release_exist() {
 package_from_slug() { printf '%s' "${1//-/}"; }
 
 class_from_slug() {
-  local slug=$1 result="" part
+  local slug=$1 result="" part parts
   IFS='-' read -ra parts <<< "$slug"
   for part in "${parts[@]}"; do
     result+="$(tr '[:lower:]' '[:upper:]' <<< "${part:0:1}")${part:1}"
