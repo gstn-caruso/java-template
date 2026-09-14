@@ -4,7 +4,6 @@ Name={{name}}
 GenericName=Game
 GenericName[es]=Juego
 Comment={{description}}
-Comment[es]={{description}}
 Exec={{slug}}
 Icon={{slug}}
 Terminal=false
