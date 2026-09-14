@@ -159,5 +159,21 @@ defaults_se_derivan_del_slug_y_el_owner() {
 
 defaults_se_derivan_del_slug_y_el_owner
 
+valores_con_caracteres_especiales_quedan_literales() {
+  current="valores con caracteres especiales quedan literales"
+  local scratch out status
+  scratch=$(copy_repo_to_scratch)
+  out=$(render_in "$scratch" --slug weird-app --name "Weird App" \
+    --description 'A/B & C | D' --owner gstn-caruso --flavor libgdx --release tag-only \
+    --author "A" --email a@example.com 2>&1)
+  status=$?
+  check "exit status" 0 "$status"
+  grep -qF 'A/B & C | D' "$scratch/pom.xml" 2>/dev/null && pass || fail "descripcion no literal en pom.xml: $out"
+  grep -qF 'A/B & C | D' "$scratch/README.md" 2>/dev/null && pass || fail "descripcion no literal en README.md"
+  rm -rf "$scratch"
+}
+
+valores_con_caracteres_especiales_quedan_literales
+
 printf '\n%d ok, %d fallando\n' "$passed" "$failed"
 [[ $failed -eq 0 ]]
