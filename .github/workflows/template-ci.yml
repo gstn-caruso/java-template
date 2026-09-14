@@ -17,8 +17,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        flavor: [libgdx]
-        release: [tag-only]
+        flavor: [libgdx, plain]
+        release: [tag-only, commit-back]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -47,6 +47,14 @@ jobs:
             --flavor ${{ matrix.flavor }} --release ${{ matrix.release }} \
             --author "CI" --email ci@example.com
 
+      - name: Resolve the app module for the flavor
+        run: |
+          case ${{ matrix.flavor }} in
+            libgdx) module=game ;;
+            plain) module=app ;;
+          esac
+          echo "MODULE=$module" >> "$GITHUB_ENV"
+
       - name: Build and test the rendered project
         working-directory: ${{ runner.temp }}/out
         run: mvn -B verify
@@ -54,17 +62,31 @@ jobs:
       - name: Inspect the rendered .deb
         working-directory: ${{ runner.temp }}/out
         run: |
-          deb=$(ls game/target/sample-game_*_all.deb)
-          dpkg-deb -I "$deb" | grep -q 'Package: sample-game'
+          deb=$(ls "$MODULE"/target/sample-game_*_all.deb)
+          dpkg-deb -I "$deb" | grep 'Package: sample-game' >/dev/null
           dpkg-deb -c "$deb" | grep -q '\./usr/bin/sample-game$'
-          dpkg-deb -c "$deb" | grep -q '\./usr/share/sample-game/sample-game-game\.jar$'
-          dpkg-deb -c "$deb" | grep -q '\./usr/share/applications/sample-game\.desktop$'
+          dpkg-deb -c "$deb" | grep -q "\\./usr/share/sample-game/sample-game-${MODULE}\\.jar\$"
+          if [[ ${{ matrix.flavor }} == libgdx ]]; then
+            dpkg-deb -c "$deb" | grep -q '\./usr/share/applications/sample-game\.desktop$'
+          else
+            if dpkg-deb -c "$deb" | grep -q '\.desktop$'; then
+              echo "the plain .deb should not contain a .desktop entry"
+              exit 1
+            fi
+          fi
+
+      - name: Run the plain jar
+        if: matrix.flavor == 'plain'
+        working-directory: ${{ runner.temp }}/out
+        run: |
+          jar=$(ls app/target/sample-game-app-*.jar)
+          java -jar "$jar" | grep -q 'Sample Game'
 
       - name: Build a release .deb with prepare-release.sh
         working-directory: ${{ runner.temp }}/out
         run: |
           bash scripts/prepare-release.sh 9.9.9
-          test -f game/target/sample-game_9.9.9_all.deb
+          test -f "$MODULE"/target/sample-game_9.9.9_all.deb
 
       - name: A failing test fails the build
         working-directory: ${{ runner.temp }}/out

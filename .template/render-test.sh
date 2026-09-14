@@ -205,5 +205,78 @@ renders_from_another_cwd() {
 
 renders_from_another_cwd
 
+plain_flavor_renders_app_module() {
+  current="plain flavor renders app module"
+  local scratch out status
+  scratch=$(copy_repo_to_scratch)
+  out=$(render_in "$scratch" --slug plain-tool --name "Plain Tool" \
+    --description "A plain command line tool." --owner gstn-caruso \
+    --flavor plain --release tag-only --author "Gaston Caruso" --email gstn.caruso@gmail.com 2>&1)
+  status=$?
+  check "exit status" 0 "$status"
+  [[ -d "$scratch/app" ]] && pass || fail "app/ no existe: $out"
+  [[ -d "$scratch/game" ]] && fail "game/ no deberia existir" || pass
+  local main_file="$scratch/app/src/main/java/plaintool/app/Main.java"
+  [[ -f $main_file ]] && pass || fail "no existe $main_file"
+  grep -q 'class Main' "$main_file" 2>/dev/null && pass || fail "la clase Main no se declaro"
+  grep -q 'println("Plain Tool")' "$main_file" 2>/dev/null && pass || fail "Main no imprime el nombre del proyecto"
+  [[ -x "$scratch/app/src/deb/plain-tool" ]] && pass || fail "falta el launcher ejecutable"
+  grep -q -- '--enable-native-access' "$scratch/app/src/deb/plain-tool" 2>/dev/null \
+    && fail "el launcher de plain no deberia habilitar native access" || pass
+  [[ -f "$scratch/app/src/deb/plain-tool.desktop" ]] && fail "no deberia existir .desktop en plain" || pass
+  [[ -d "$scratch/app/src/deb/icons" ]] && fail "no deberia existir icons/ en plain" || pass
+  grep -q 'badlogicgames' "$scratch/app/pom.xml" 2>/dev/null && fail "app/pom.xml no deberia depender de badlogicgames" || pass
+  grep -q '<artifactId>plain-tool-app</artifactId>' "$scratch/app/pom.xml" 2>/dev/null \
+    && pass || fail "app/pom.xml no tiene el artifactId plain-tool-app"
+  grep -q '<module>app</module>' "$scratch/pom.xml" 2>/dev/null && pass || fail "el pom raiz no incluye el modulo app"
+  check "README arranca con el nombre" "# Plain Tool" "$(head -n1 "$scratch/README.md" 2>/dev/null)"
+  grep -q '## Ejecutar' "$scratch/README.md" 2>/dev/null && pass || fail "el README no tiene ## Ejecutar"
+  rm -rf "$scratch"
+}
+
+plain_flavor_renders_app_module
+
+commit_back_release_configures_changelog_and_git() {
+  current="commit back release configures changelog and git"
+  local scratch out status
+  scratch=$(copy_repo_to_scratch)
+  out=$(render_in "$scratch" --slug holy-wars --name "Holy Wars" \
+    --description "Juego hecho con libGDX en Java 25." --owner gstn-caruso \
+    --flavor libgdx --release commit-back --author "Gaston Caruso" --email gstn.caruso@gmail.com 2>&1)
+  status=$?
+  check "exit status" 0 "$status"
+  local releaserc="$scratch/.releaserc.json"
+  grep -q '"@semantic-release/changelog"' "$releaserc" 2>/dev/null && pass || fail "falta @semantic-release/changelog: $out"
+  grep -q '"@semantic-release/git"' "$releaserc" 2>/dev/null && pass || fail "falta @semantic-release/git"
+  grep -qF '"changelogFile": "CHANGELOG.md"' "$releaserc" 2>/dev/null && pass || fail "changelogFile incorrecto en releaserc"
+  grep -qF '"assets": ["pom.xml", "*/pom.xml", "CHANGELOG.md"]' "$releaserc" 2>/dev/null && pass || fail "assets del plugin git incorrectos en releaserc"
+  grep -q 'game/target/holy-wars_\*_all.deb' "$releaserc" 2>/dev/null && pass || fail "asset del releaserc incorrecto"
+  grep -q '<version>0.1.0-SNAPSHOT</version>' "$scratch/pom.xml" 2>/dev/null && pass || fail "version incorrecta en pom.xml"
+  grep -q '<version>0.1.0-SNAPSHOT</version>' "$scratch/domain/pom.xml" 2>/dev/null && pass || fail "version incorrecta en domain/pom.xml"
+  grep -q '<version>0.1.0-SNAPSHOT</version>' "$scratch/game/pom.xml" 2>/dev/null && pass || fail "version incorrecta en game/pom.xml"
+  rm -rf "$scratch"
+}
+
+commit_back_release_configures_changelog_and_git
+
+plain_flavor_with_commit_back_release() {
+  current="plain flavor with commit back release"
+  local scratch out status
+  scratch=$(copy_repo_to_scratch)
+  out=$(render_in "$scratch" --slug plain-tool --name "Plain Tool" \
+    --description "A plain command line tool." --owner gstn-caruso \
+    --flavor plain --release commit-back --author "Gaston Caruso" --email gstn.caruso@gmail.com 2>&1)
+  status=$?
+  check "exit status" 0 "$status"
+  [[ -d "$scratch/app" ]] && pass || fail "app/ no existe: $out"
+  local releaserc="$scratch/.releaserc.json"
+  grep -q 'app/target/plain-tool_\*_all.deb' "$releaserc" 2>/dev/null && pass || fail "asset del releaserc incorrecto"
+  grep -q '<version>0.1.0-SNAPSHOT</version>' "$scratch/pom.xml" 2>/dev/null && pass || fail "version incorrecta en pom.xml"
+  check "sin placeholders sin resolver" "" "$(grep -rlE '\{\{[a-z_]+\}\}' "$scratch" 2>/dev/null | tr '\n' ' ' | sed 's/ *$//')"
+  rm -rf "$scratch"
+}
+
+plain_flavor_with_commit_back_release
+
 printf '\n%d ok, %d fallando\n' "$passed" "$failed"
 [[ $failed -eq 0 ]]
