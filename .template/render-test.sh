@@ -134,6 +134,7 @@ pom_raiz_y_releaserc_quedan_coherentes() {
   local releaserc="$scratch/.releaserc.json"
   grep -q '"@semantic-release/git"' "$releaserc" 2>/dev/null && fail "releaserc tiene @semantic-release/git en modo tag-only" || pass
   grep -q 'game/target/holy-wars_\*_all.deb' "$releaserc" 2>/dev/null && pass || fail "asset del releaserc incorrecto"
+  grep -qF '{ "breaking": true, "release": "major" }' "$releaserc" 2>/dev/null && pass || fail "falta la regla breaking->major en releaseRules"
   rm -rf "$scratch"
 }
 
