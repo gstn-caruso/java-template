@@ -17,7 +17,8 @@ mvn -B test
 ```
 
 Cada merge a `main` publica un release semántico según el prefijo del commit (`feat:` sube minor,
-`fix:` y `perf:` suben patch; `chore:`, `docs:`, `ci:`, `test:`, `refactor:`, `build:`, `style:` no publican).
+`fix:` y `perf:` suben patch; un `!` o un footer `BREAKING CHANGE:` suben major;
+`chore:`, `docs:`, `ci:`, `test:`, `refactor:`, `build:`, `style:` no publican).
 
 ## Instalación
 
