@@ -1,9 +1,0 @@
-Package: {{slug}}
-Version: [[version]]
-Section: games
-Priority: optional
-Architecture: all
-Depends: openjdk-25-jre | java-runtime (>= 25)
-Maintainer: {{author}} <{{email}}>
-Description: {{description}}
- Instala el comando {{slug}} y una entrada en el menú de aplicaciones; requiere Java 25.

@@ -2,13 +2,9 @@
 
 {{description}}
 
-## Jugar
+## Ejecutar
 
-```
-mvn -q compile exec:exec
-```
-
-Abre una ventana con el juego.
+`mvn -q -pl app -am package` y luego `java -jar app/target/{{slug}}-app-0.1.0-SNAPSHOT.jar`. Abrí `http://localhost:8080/`.
 
 ## Testear
 
