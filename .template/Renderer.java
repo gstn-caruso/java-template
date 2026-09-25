@@ -113,7 +113,8 @@ public class Renderer {
                         String original = Files.readString(path);
                         if (original.contains("{{")) {
                             Files.writeString(path, replace(original, values,
-                                    path.toString().endsWith(".xml") || path.toString().endsWith(".html")));
+                                    path.toString().endsWith(".xml") || path.toString().endsWith(".html"),
+                                    path.toString().endsWith(".java")));
                         }
                     } catch (CharacterCodingException ignored) {
                     }
@@ -123,16 +124,20 @@ public class Renderer {
     }
 
     private static String replace(String text, Map<String, String> values) {
-        return replace(text, values, false);
+        return replace(text, values, false, false);
     }
 
-    private static String replace(String text, Map<String, String> values, boolean xml) {
+    private static String replace(String text, Map<String, String> values, boolean xml, boolean javaSource) {
         String replaced = text;
         for (var entry : values.entrySet()) {
             String value = entry.getValue();
             if (xml) {
                 value = value.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
                         .replace("\"", "&quot;").replace("'", "&apos;");
+            }
+            if (javaSource) {
+                value = value.replace("\\", "\\\\").replace("\"", "\\\"")
+                        .replace("\n", "\\n").replace("\r", "\\r").replace("\t", "\\t");
             }
             replaced = replaced.replace("{{" + entry.getKey() + "}}", value);
         }

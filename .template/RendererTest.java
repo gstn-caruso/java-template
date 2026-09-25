@@ -7,6 +7,7 @@ public class RendererTest {
     public static void main(String[] args) throws Exception {
         rendersSwingByDefault();
         rendersEveryFlavor();
+        escapesJavaLiterals();
         rejectsUnknownFlavor();
     }
 
@@ -61,6 +62,20 @@ public class RendererTest {
         } catch (IllegalArgumentException expected) {
             require(expected.getMessage().contains("flavor"));
         }
+    }
+
+    private static void escapesJavaLiterals() throws Exception {
+        Path project = copyTemplate();
+        Renderer.render(project, Map.of(
+                "slug", "sample-app",
+                "name", "Mi \"App\" \\ Demo & Co",
+                "description", "A/B & C",
+                "owner", "gstn-caruso"));
+        var build = new ProcessBuilder("mvn", "-q", "-B", "test")
+                .directory(project.toFile())
+                .inheritIO()
+                .start();
+        require(build.waitFor() == 0);
     }
 
     private static Path copyTemplate() throws Exception {
