@@ -51,3 +51,13 @@ jobs:
         run: dpkg-deb -c ${{ runner.temp }}/sample-app_0.1.999_amd64.deb | grep '/lib/runtime/lib/server/libjvm.so'
       - name: Check release JAR
         run: jar tf ${{ matrix.module }}/target/sample-app-${{ matrix.module }}-0.1.999.jar
+
+  build:
+    needs: [renderer, generated-projects]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require renderer
+        run: test "${{ needs.renderer.result }}" = success
+      - name: Require generated projects
+        run: test "${{ needs.generated-projects.result }}" = success
