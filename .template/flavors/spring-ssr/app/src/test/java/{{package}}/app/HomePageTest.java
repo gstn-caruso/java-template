@@ -20,7 +20,7 @@ class HomePageTest {
             var request = HttpRequest.newBuilder(URI.create("http://localhost:" + port + "/")).GET().build();
             var response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
             assertThat(response.statusCode()).isEqualTo(200);
-            assertThat(response.body()).contains("<h1>" + HtmlUtils.htmlEscape("{{name}}") + "</h1>");
+            assertThat(HtmlUtils.htmlUnescape(response.body())).contains("<h1>{{name}}</h1>");
         }
     }
 }

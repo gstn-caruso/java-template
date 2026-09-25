@@ -72,7 +72,7 @@ public class RendererTest {
             Path project = copyTemplate();
             Renderer.render(project, Map.of(
                     "slug", "sample-app",
-                    "name", "Mi \"App\" \\ Demo & Co",
+                    "name", "Café Mi \"App\" \\ Demo & Co",
                     "description", "A/B & C",
                     "owner", "gstn-caruso",
                     "flavor", flavor));
