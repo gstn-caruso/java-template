@@ -97,7 +97,7 @@ render_completo_arma_el_layout_esperado() {
   [[ -f "$scratch/.github/workflows/ci.yml" ]] && pass || fail "ci.yml no existe: $out"
   grep -q '${{ runner.os }}' "$scratch/.github/workflows/ci.yml" 2>/dev/null && pass || fail "ci.yml perdio \${{ runner.os }}"
   [[ -d "$scratch/game" ]] && pass || fail "game/ no existe"
-  check ".tcr" "mvn -q -B test" "$(cat "$scratch/.tcr" 2>/dev/null)"
+  [[ ! -e "$scratch/.tcr" ]] && pass || fail ".tcr sigue en el proyecto renderizado"
   check "README arranca con el nombre" "# Holy Wars" "$(head -n1 "$scratch/README.md" 2>/dev/null)"
   rm -rf "$scratch"
 }
@@ -180,11 +180,11 @@ unresolved_placeholder_fails_with_exit_1() {
   current="unresolved placeholder fails with exit 1"
   local scratch err status
   scratch=$(copy_repo_to_scratch)
-  echo '{{orphan}}' >> "$scratch/.template/common/.tcr"
+  echo '{{orphan}}' >> "$scratch/.template/common/.github/workflows/ci.yml"
   err=$(render_holy_wars_sample_in "$scratch" 2>&1 1>/dev/null)
   status=$?
   check "exit status" 1 "$status"
-  echo "$err" | grep -q '\.tcr' && pass || fail "stderr no nombro el archivo con el placeholder: $err"
+  echo "$err" | grep -q 'ci.yml' && pass || fail "stderr no nombro el archivo con el placeholder: $err"
   rm -rf "$scratch"
 }
 

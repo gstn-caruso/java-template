@@ -19,7 +19,7 @@ releases semánticos por conventional commits. Es el esqueleto que comparten `de
     vuelta y los poms quedan en `0.0.0-SNAPSHOT`. Compatible con un ruleset en `main` que exija PR.
   - `commit-back`: además actualiza `CHANGELOG.md` y los poms en `main` con un commit del bot.
     Requiere que nada bloquee ese push (sin ruleset activo).
-- `.tcr` con `mvn -q -B test`, `scripts/prepare-release.sh`, `.gitignore`, LICENSE MIT.
+- `scripts/prepare-release.sh`, `.gitignore` y LICENSE MIT.
 
 ## Cómo usarlo
 
