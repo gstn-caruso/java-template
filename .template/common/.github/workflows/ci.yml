@@ -39,8 +39,10 @@ jobs:
           cache: maven
       - name: Build versioned JAR
         run: mvn -B -Drevision=0.1.${{ github.run_number }} package
+      - name: Stage release JAR
+        run: install -D {{app_module}}/target/{{slug}}-{{app_module}}-0.1.${{ github.run_number }}.jar ${{ runner.temp }}/jpackage-input/{{slug}}-{{app_module}}-0.1.${{ github.run_number }}.jar
       - name: Package JAR with Java runtime
-        run: jpackage --type deb --input {{app_module}}/target --main-jar {{slug}}-{{app_module}}-0.1.${{ github.run_number }}.jar --name {{slug}} --app-version 0.1.${{ github.run_number }} --dest ${{ runner.temp }} --linux-package-name {{slug}}
+        run: jpackage --type deb --input ${{ runner.temp }}/jpackage-input --main-jar {{slug}}-{{app_module}}-0.1.${{ github.run_number }}.jar --name {{slug}} --app-version 0.1.${{ github.run_number }} --dest ${{ runner.temp }} --linux-package-name {{slug}}
       - name: Verify embedded runtime
         run: dpkg-deb -c ${{ runner.temp }}/{{slug}}_0.1.${{ github.run_number }}_amd64.deb | grep '/lib/runtime/lib/server/libjvm.so'
       - name: Publish JAR and Debian package

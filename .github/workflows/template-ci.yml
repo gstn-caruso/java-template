@@ -45,8 +45,10 @@ jobs:
         run: mvn -B verify
       - name: Build release JAR
         run: mvn -B -Drevision=0.1.999 package
+      - name: Stage release JAR
+        run: install -D ${{ matrix.module }}/target/sample-app-${{ matrix.module }}-0.1.999.jar ${{ runner.temp }}/jpackage-input/sample-app-${{ matrix.module }}-0.1.999.jar
       - name: Package Debian release
-        run: jpackage --type deb --input ${{ matrix.module }}/target --main-jar sample-app-${{ matrix.module }}-0.1.999.jar --name sample-app --app-version 0.1.999 --dest ${{ runner.temp }} --linux-package-name sample-app
+        run: jpackage --type deb --input ${{ runner.temp }}/jpackage-input --main-jar sample-app-${{ matrix.module }}-0.1.999.jar --name sample-app --app-version 0.1.999 --dest ${{ runner.temp }} --linux-package-name sample-app
       - name: Check bundled Java VM
         run: dpkg-deb -c ${{ runner.temp }}/sample-app_0.1.999_amd64.deb | grep '/lib/runtime/lib/server/libjvm.so'
       - name: Check release JAR
