@@ -20,7 +20,7 @@ El renderer copia el sabor elegido, reemplaza los placeholders y borra `.templat
 
 ## Release
 
-Cada merge de PR a `main` dispara el workflow del proyecto generado, incluso si solo cambian docs o configuración. Tras `mvn verify`, construye el JAR con versión `0.1.<run_number>`, crea un `.deb` Linux `amd64` mediante `jpackage` y publica ambos en GitHub Releases. El `.deb` incluye una JVM propia; no depende de Java instalado en el equipo de destino. Cada PR actualiza `CHANGELOG.md` con una línea que describa el cambio para que el historial quede versionado.
+Cada merge de PR a `main` dispara el workflow del proyecto generado, incluso si solo cambian docs o configuración. Tras `mvn verify`, construye el JAR con versión `0.1.<run_number>`, crea un `.deb` Linux `amd64` mediante `jpackage` y publica ambos junto con `CHANGELOG.md` en GitHub Releases. El `.deb` incluye una JVM propia; no depende de Java instalado en el equipo de destino. Cada PR actualiza `CHANGELOG.md` con una línea que describa el cambio para que el historial quede versionado.
 
 El JAR sigue necesitando Java 25 instalado para ejecutarse por separado. El `.deb` incluye Java 25 y el programa. Para publicar paquetes de otras arquitecturas hace falta una CI de esa arquitectura.
 

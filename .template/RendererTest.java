@@ -35,6 +35,7 @@ public class RendererTest {
         require(workflow.contains("  build:\n"));
         require(workflow.contains("install -D app/target/sample-app-app-0.1.${{ github.run_number }}.jar"));
         require(workflow.contains("--input ${{ runner.temp }}/jpackage-input"));
+        require(workflow.contains("_amd64.deb CHANGELOG.md --title"));
     }
 
     private static void rendersEveryFlavor() throws Exception {
