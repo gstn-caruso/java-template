@@ -1,125 +1,53 @@
 name: Template CI
 
 on:
-  push:
-    branches: [main]
   pull_request:
+    branches: [main]
+  push:
     branches: [main]
 
 jobs:
-  render-test:
+  renderer:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - run: bash .template/render-test.sh
-
-  verify:
-    strategy:
-      fail-fast: false
-      matrix:
-        flavor: [libgdx, plain]
-        release: [tag-only, commit-back]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-
-      - name: Set up JDK 25
-        uses: actions/setup-java@v6
+      - uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: '25'
+      - name: Compile renderer contract
+        run: javac -d target/template-test .template/Renderer.java .template/RendererTest.java
+      - name: Verify renderer contract
+        run: java -cp target/template-test RendererTest
 
-      - name: Cache the Maven repository
-        uses: actions/cache@v6
-        with:
-          path: ~/.m2/repository
-          key: maven-${{ runner.os }}-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            maven-${{ runner.os }}-
-
-      - name: Render a sample project
-        run: |
-          mkdir -p "$RUNNER_TEMP/out"
-          tar --exclude=.git -cf - . | tar -xf - -C "$RUNNER_TEMP/out"
-          cd "$RUNNER_TEMP/out"
-          bash .template/render.sh --slug sample-game --name "Sample Game" \
-            --description "A sample game." --owner gstn-caruso \
-            --flavor ${{ matrix.flavor }} --release ${{ matrix.release }} \
-            --author "CI" --email ci@example.com
-
-      - name: Resolve the app module for the flavor
-        run: |
-          case ${{ matrix.flavor }} in
-            libgdx) module=game ;;
-            plain) module=app ;;
-          esac
-          echo "MODULE=$module" >> "$GITHUB_ENV"
-
-      - name: Build and test the rendered project
-        working-directory: ${{ runner.temp }}/out
-        run: mvn -B verify
-
-      - name: Inspect the rendered .deb
-        working-directory: ${{ runner.temp }}/out
-        run: |
-          deb=$(ls "$MODULE"/target/sample-game_*_all.deb)
-          dpkg-deb -I "$deb" | grep 'Package: sample-game' >/dev/null
-          dpkg-deb -c "$deb" | grep -q '\./usr/bin/sample-game$'
-          dpkg-deb -c "$deb" | grep -q "\\./usr/share/sample-game/sample-game-${MODULE}\\.jar\$"
-          if [[ ${{ matrix.flavor }} == libgdx ]]; then
-            dpkg-deb -c "$deb" | grep -q '\./usr/share/applications/sample-game\.desktop$'
-          else
-            if dpkg-deb -c "$deb" | grep -q '\.desktop$'; then
-              echo "the plain .deb should not contain a .desktop entry"
-              exit 1
-            fi
-          fi
-
-      - name: Run the plain jar
-        if: matrix.flavor == 'plain'
-        working-directory: ${{ runner.temp }}/out
-        run: |
-          jar=$(ls app/target/sample-game-app-*.jar)
-          java -jar "$jar" | grep -q 'Sample Game'
-
-      - name: Build a release .deb with prepare-release.sh
-        working-directory: ${{ runner.temp }}/out
-        run: |
-          bash scripts/prepare-release.sh 9.9.9
-          test -f "$MODULE"/target/sample-game_9.9.9_all.deb
-
-      - name: A failing test fails the build
-        working-directory: ${{ runner.temp }}/out
-        run: |
-          mkdir -p domain/src/test/java/samplegame/domain
-          cat > domain/src/test/java/samplegame/domain/HarnessTest.java <<'JAVA'
-          package samplegame.domain;
-
-          import org.junit.jupiter.api.Test;
-
-          import static org.assertj.core.api.Assertions.assertThat;
-
-          class HarnessTest {
-
-              @Test
-              void fails() {
-                  assertThat(1).isEqualTo(2);
-              }
-          }
-          JAVA
-          if mvn -q -B test; then
-            echo "a failing test did not fail the build"
-            exit 1
-          fi
-
-  build:
-    needs: [render-test, verify]
-    if: always()
+  generated-projects:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - flavor: swing
+            module: app
+          - flavor: libgdx
+            module: game
+          - flavor: spring-ssr
+            module: app
     steps:
-      - name: Require render-test and verify to succeed
-        run: |
-          if [[ "${{ needs.render-test.result }}" != "success" || "${{ needs.verify.result }}" != "success" ]]; then
-            echo "render-test=${{ needs.render-test.result }} verify=${{ needs.verify.result }}"
-            exit 1
-          fi
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '25'
+          cache: maven
+      - name: Generate project
+        run: java .template/Renderer.java --slug sample-app --name "Sample App" --description "Sample" --owner gstn-caruso --flavor ${{ matrix.flavor }}
+      - name: Test project
+        run: mvn -B verify
+      - name: Build release JAR
+        run: mvn -B -Drevision=0.1.999 package
+      - name: Package Debian release
+        run: jpackage --type deb --input ${{ matrix.module }}/target --main-jar sample-app-${{ matrix.module }}-0.1.999.jar --name sample-app --app-version 0.1.999 --dest ${{ runner.temp }} --linux-package-name sample-app
+      - name: Check bundled Java VM
+        run: dpkg-deb -c ${{ runner.temp }}/sample-app_0.1.999_amd64.deb | grep '/lib/runtime/lib/server/libjvm.so'
+      - name: Check release JAR
+        run: jar tf ${{ matrix.module }}/target/sample-app-${{ matrix.module }}-0.1.999.jar
