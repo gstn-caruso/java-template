@@ -27,4 +27,4 @@ en GitHub e instalalo:
 sudo apt install ./{{slug}}_<versión>_amd64.deb
 ```
 
-Esto deja el comando `{{slug}}` disponible.
+El lanzador queda en `/opt/{{slug}}/bin/{{slug}}`.
