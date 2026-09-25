@@ -46,4 +46,4 @@ jobs:
       - name: Publish JAR and Debian package
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create v0.1.${{ github.run_number }} {{app_module}}/target/{{slug}}-{{app_module}}-0.1.${{ github.run_number }}.jar ${{ runner.temp }}/{{slug}}_0.1.${{ github.run_number }}_amd64.deb --title v0.1.${{ github.run_number }} --generate-notes
+        run: gh release create v0.1.${{ github.run_number }} {{app_module}}/target/{{slug}}-{{app_module}}-0.1.${{ github.run_number }}.jar ${{ runner.temp }}/{{slug}}_0.1.${{ github.run_number }}_amd64.deb --title v0.1.${{ github.run_number }} --target ${{ github.sha }} --generate-notes

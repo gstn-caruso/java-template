@@ -30,6 +30,7 @@ public class RendererTest {
         require(workflow.contains("gh release create"));
         require(workflow.contains("sample-app-app-0.1.${{ github.run_number }}.jar"));
         require(workflow.contains("sample-app_0.1.${{ github.run_number }}_amd64.deb"));
+        require(workflow.contains("--target ${{ github.sha }}"));
     }
 
     private static void rendersEveryFlavor() throws Exception {
