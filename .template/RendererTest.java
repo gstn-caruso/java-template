@@ -68,17 +68,20 @@ public class RendererTest {
     }
 
     private static void escapesJavaLiterals() throws Exception {
-        Path project = copyTemplate();
-        Renderer.render(project, Map.of(
-                "slug", "sample-app",
-                "name", "Mi \"App\" \\ Demo & Co",
-                "description", "A/B & C",
-                "owner", "gstn-caruso"));
-        var build = new ProcessBuilder("mvn", "-q", "-B", "test")
-                .directory(project.toFile())
-                .inheritIO()
-                .start();
-        require(build.waitFor() == 0);
+        for (String flavor : new String[] {"swing", "spring-ssr"}) {
+            Path project = copyTemplate();
+            Renderer.render(project, Map.of(
+                    "slug", "sample-app",
+                    "name", "Mi \"App\" \\ Demo & Co",
+                    "description", "A/B & C",
+                    "owner", "gstn-caruso",
+                    "flavor", flavor));
+            var build = new ProcessBuilder("mvn", "-q", "-B", "test")
+                    .directory(project.toFile())
+                    .inheritIO()
+                    .start();
+            require(build.waitFor() == 0);
+        }
     }
 
     private static Path copyTemplate() throws Exception {
